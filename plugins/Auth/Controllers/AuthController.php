@@ -16,7 +16,8 @@ class AuthController
         if (request()->isMethod("POST")) {
             if (Auth::attempt([
                 'email' => request()->input('email'),
-                'password' => request()->input('password')
+                'password' => request()->input('password'),
+                'active' => true,
             ])) {
                 session()->regenerate();
                 return redirect()->route("dashboard");

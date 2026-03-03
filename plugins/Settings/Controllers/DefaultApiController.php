@@ -24,6 +24,7 @@ class DefaultApiController
                 Header::make("lastname","Cognome","center"),
                 Header::make("email","Email","center"),
                 Header::make("phone_number","Telefono","center"),
+                Header::make("active","Attivo","center",false),
                 Header::make("groups","Gruppi","center",false),
             ])->make();
     }
