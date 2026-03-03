@@ -1,6 +1,7 @@
 <script setup>
 import { inject, onMounted, ref } from 'vue'
 import RichTextEditor from '../../Components/Editor/RichTextEditor.vue'
+import QuizEditor from './QuizEditor.vue'
 
 const notify = inject('notify')
 
@@ -14,6 +15,7 @@ const chapters = ref([])
 
 const selectedChapterId = ref(null)
 const chapter = ref(null)
+const tab = ref('content')
 
 const newChapterTitle = ref('')
 
@@ -93,8 +95,15 @@ onMounted(loadBook)
         <div v-if="!chapter" class="text-medium-emphasis">Seleziona un capitolo per modificarlo.</div>
 
         <div v-else>
-          <div class="d-flex align-center mb-3">
-            <h3 class="mr-3">Editor capitolo</h3>
+          <v-tabs v-model="tab" class="mb-3">
+            <v-tab value="content" prepend-icon="mdi-file-document-edit">Contenuto</v-tab>
+            <v-tab value="quiz" prepend-icon="mdi-help-circle">Quiz</v-tab>
+          </v-tabs>
+
+          <v-tabs-window v-model="tab">
+            <v-tabs-window-item value="content">
+              <div class="d-flex align-center mb-3">
+                <h3 class="mr-3">Editor capitolo</h3>
             <v-spacer />
             <v-btn variant="tonal" color="green" @click="saveChapter">Salva</v-btn>
           </div>
@@ -116,6 +125,11 @@ onMounted(loadBook)
               />
             </v-col>
           </v-row>
+            </v-tabs-window-item>
+            <v-tabs-window-item value="quiz">
+              <QuizEditor :chapter-id="chapter.id" />
+            </v-tabs-window-item>
+          </v-tabs-window>
         </div>
       </v-col>
     </v-row>
