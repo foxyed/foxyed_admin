@@ -20,12 +20,35 @@ class DefaultApiController
     {
         return DataTable::of(User::query())
             ->setHeaders([
-                Header::make("firstname","Nome","center"),
-                Header::make("lastname","Cognome","center"),
-                Header::make("email","Email","center"),
-                Header::make("phone_number","Telefono","center"),
-                Header::make("groups","Gruppi","center",false),
+                Header::make("firstname", "Nome", "center"),
+                Header::make("lastname", "Cognome", "center"),
+                Header::make("email", "Email", "center"),
+                Header::make("phone_number", "Telefono", "center"),
+                Header::make("groups", "Gruppi", "center", false),
             ])->make();
+    }
+
+    #[Route("/users/{id}/edit", methods: ['POST'])]
+    public function getUser($id)
+    {
+        $user = User::query()->find($id);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nessun utente trovato'
+            ]);
+        }
+        $ok = $user->update([
+            'firstname' => request('firstname') ?? $user->firstname,
+            'lastname' => request('lastname') ?? $user->lastname,
+            'email' => request('email') ?? $user->email,
+            'phone_number' => request('phone_number') ?? $user->phone_number,
+            'active' => request('active') ?? 1
+        ]);
+        return response()->json([
+            'success' => $ok,
+            'user' => $user->refresh()
+        ]);
     }
 
     #[Route("/dictionary/list")]
