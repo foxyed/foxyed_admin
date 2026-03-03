@@ -102,4 +102,30 @@ class BooksApiController
         $ch->delete();
         return response()->json(['success' => true]);
     }
+
+    #[Route('/book/{bookId}/chapters/reorder', methods: ['POST'])]
+    public function reorderChapters(int $bookId)
+    {
+        $book = Book::query()->with('course')->findOrFail($bookId);
+        if (!Gate::allows('course.manage', $book->course)) {
+            return response()->json(['success' => false, 'message' => 'Permessi insufficienti'], 403);
+        }
+
+        $data = request()->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $ids = $data['ids'];
+        $count = Chapter::query()->where('book_id', $book->id)->whereIn('id', $ids)->count();
+        if ($count !== count($ids)) {
+            return response()->json(['success' => false, 'message' => 'Lista capitoli non valida'], 422);
+        }
+
+        foreach ($ids as $i => $id) {
+            Chapter::query()->where('book_id', $book->id)->where('id', $id)->update(['order' => $i + 1]);
+        }
+
+        return response()->json(['success' => true]);
+    }
 }

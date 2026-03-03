@@ -1,5 +1,6 @@
 <script setup>
-import { inject, onMounted, ref } from 'vue'
+import { inject, onMounted, ref, computed } from 'vue'
+import draggable from 'vuedraggable'
 import RichTextEditor from '../../Components/Editor/RichTextEditor.vue'
 import QuizEditor from './QuizEditor.vue'
 
@@ -16,6 +17,8 @@ const chapters = ref([])
 const selectedChapterId = ref(null)
 const chapter = ref(null)
 const tab = ref('content')
+
+const chapterIds = computed(() => chapters.value.map(c => c.id))
 
 const newChapterTitle = ref('')
 
@@ -50,7 +53,7 @@ const createChapter = async () => {
   }
 }
 
-const saveChapter = async () => {
+const saveChapter = async (silent = false) => {
   const payload = {
     title: chapter.value.title,
     content_json: chapter.value.content_json,
@@ -58,8 +61,27 @@ const saveChapter = async () => {
     status: chapter.value.status,
   }
   const { data } = await axios.post(`/books/api/chapters/${chapter.value.id}/update`, payload)
-  if (data.success) {
+  if (data.success && !silent) {
     notify({ type: 'success', message: 'Salvato' })
+  }
+  if (data.success) {
+    await loadBook()
+  }
+}
+
+let autosaveTimer = null
+const scheduleAutosave = () => {
+  if (!chapter.value) return
+  clearTimeout(autosaveTimer)
+  autosaveTimer = setTimeout(() => saveChapter(true), 1200)
+}
+
+const onReorder = async () => {
+  const res = await axios.post(`/books/api/book/${book.value.id}/chapters/reorder`, {
+    ids: chapterIds.value,
+  })
+  if (res.data.success) {
+    notify({ type: 'success', message: 'Ordine capitoli aggiornato' })
     await loadBook()
   }
 }
@@ -80,15 +102,26 @@ onMounted(loadBook)
         <v-text-field v-model="newChapterTitle" label="Titolo nuovo capitolo" />
         <v-btn class="mb-4" @click="createChapter">Crea capitolo</v-btn>
 
-        <v-list>
-          <v-list-item
-            v-for="c in chapters"
-            :key="c.id"
-            :title="c.title"
-            :subtitle="c.status"
-            @click="selectedChapterId = c.id; loadChapter(c.id)"
-          />
-        </v-list>
+        <draggable
+          v-model="chapters"
+          item-key="id"
+          handle=".drag-handle"
+          @end="onReorder"
+        >
+          <template #item="{ element: c }">
+            <v-list>
+              <v-list-item
+                :title="c.title"
+                :subtitle="c.status"
+                @click="selectedChapterId = c.id; loadChapter(c.id)"
+              >
+                <template #prepend>
+                  <v-icon class="drag-handle" style="cursor: grab">mdi-drag</v-icon>
+                </template>
+              </v-list-item>
+            </v-list>
+          </template>
+        </draggable>
       </v-col>
 
       <v-col cols="12" md="8">
@@ -108,12 +141,13 @@ onMounted(loadBook)
             <v-btn variant="tonal" color="green" @click="saveChapter">Salva</v-btn>
           </div>
 
-          <v-text-field v-model="chapter.title" label="Titolo" />
+          <v-text-field v-model="chapter.title" label="Titolo" @update:model-value="scheduleAutosave" />
 
           <RichTextEditor
             v-model="chapter.content_json"
             :course-id="props.courseId"
-            @update:html="(html) => chapter.content_html = html"
+            @update:html="(html) => { chapter.content_html = html; scheduleAutosave(); }"
+            @update:modelValue="() => scheduleAutosave()"
           />
 
           <v-row class="mt-3">
@@ -122,6 +156,7 @@ onMounted(loadBook)
                 v-model="chapter.status"
                 :items="['draft','published']"
                 label="Stato"
+                @update:model-value="scheduleAutosave"
               />
             </v-col>
           </v-row>
