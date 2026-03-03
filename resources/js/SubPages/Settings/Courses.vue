@@ -95,7 +95,7 @@ const openCreateCourse = () => {
     course_category_id: meta.value.categories?.[0]?.id ?? null,
     teacher_user_id: meta.value.teachers?.[0]?.id ?? null,
     title: '',
-    code: '',
+    code: '(auto)',
     description: '',
     price: 0,
     active: true,
@@ -298,7 +298,7 @@ const toggleCourseActive = async (row) => {
           </v-row>
 
           <v-text-field v-model="courseFields.title" label="Titolo" />
-          <v-text-field v-model="courseFields.code" label="Codice (es. E-MAT-001)" />
+          <v-text-field v-model="courseFields.code" label="Codice" disabled hint="Generato automaticamente dalla categoria" persistent-hint />
           <v-textarea v-model="courseFields.description" label="Descrizione" />
 
           <v-row>

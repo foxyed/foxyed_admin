@@ -6,6 +6,7 @@ use App\Attributes\IsGranted;
 use App\Models\Course;
 use App\Models\CourseCategory;
 use App\Models\User;
+use App\Utils\Courses\CourseCode;
 use App\Utils\DataTable\DataTable;
 use App\Utils\DataTable\Header;
 use Illuminate\Support\Str;
@@ -144,7 +145,6 @@ class CoursesApiController
             'course_category_id' => ['required', 'integer', 'exists:course_categories,id'],
             'teacher_user_id' => ['required', 'integer', 'exists:users,id'],
             'title' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255', 'unique:courses,code'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'active' => ['sometimes', 'boolean'],
@@ -159,11 +159,14 @@ class CoursesApiController
             ], 422);
         }
 
+        $category = CourseCategory::query()->findOrFail($data['course_category_id']);
+        $code = CourseCode::nextForCategory($category);
+
         Course::query()->create([
             'course_category_id' => $data['course_category_id'],
             'teacher_user_id' => $data['teacher_user_id'],
             'title' => $data['title'],
-            'code' => $data['code'],
+            'code' => $code,
             'description' => $data['description'] ?? null,
             'price' => $data['price'],
             'active' => $data['active'] ?? true,
@@ -181,7 +184,6 @@ class CoursesApiController
             'course_category_id' => ['required', 'integer', 'exists:course_categories,id'],
             'teacher_user_id' => ['required', 'integer', 'exists:users,id'],
             'title' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255', Rule::unique('courses', 'code')->ignore($course->id)],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'active' => ['sometimes', 'boolean'],
@@ -198,7 +200,6 @@ class CoursesApiController
         $course->course_category_id = $data['course_category_id'];
         $course->teacher_user_id = $data['teacher_user_id'];
         $course->title = $data['title'];
-        $course->code = $data['code'];
         $course->description = $data['description'] ?? null;
         $course->price = $data['price'];
         if (array_key_exists('active', $data)) {
