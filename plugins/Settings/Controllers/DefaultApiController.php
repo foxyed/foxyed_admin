@@ -99,4 +99,46 @@ class DefaultApiController
 
     }
 
+    #[Route("/dictionary/{id}/delete", methods: ['POST'])]
+    #[IsGranted("role:admin")]
+    public function deleteDictionaryItem($id)
+    {
+        $setting = Settings::query()->find($id);
+        if (!$setting) {
+            return response()->json([
+                'success' => false,
+            ]);
+        }
+        $setting->delete();
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
+    #[Route("/dictionary/{id}/edit", methods: ['POST'])]
+    #[IsGranted("role:admin")]
+    public function updateDictionaryItem($id)
+    {
+        $setting = Settings::query()->find($id);
+        if (!$setting) {
+            return response()->json([
+                'success' => false,
+            ]);
+        }
+        $ok = $setting->update([
+            'key' => request('key'),
+            'value' => request('value'),
+            'is_live' => request('is_live', "off") === "on",
+            'label' => request('label'),
+        ]);
+        if (!$ok) {
+            return response()->json([
+                'success' => false,
+            ]);
+        }
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
 }
