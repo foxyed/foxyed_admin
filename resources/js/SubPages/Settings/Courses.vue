@@ -1,6 +1,7 @@
 <script setup>
-import {inject, onMounted, ref, useTemplateRef} from 'vue'
+import {inject, onMounted, ref, useTemplateRef, watch} from 'vue'
 import DataTable from "../../Components/DataTable.vue";
+import Books from "./Books.vue";
 
 const notify = inject('notify')
 
@@ -81,9 +82,9 @@ const courseModal = ref(false)
 const courseEditing = ref(null)
 const courseFields = ref({
   course_category_id: null,
-  teacher_user_id: null,
+  owner_user_id: null,
   title: '',
-  code: '',
+  code: '(auto)',
   description: '',
   price: 0,
   active: true,
@@ -93,7 +94,7 @@ const openCreateCourse = () => {
   courseEditing.value = null
   courseFields.value = {
     course_category_id: meta.value.categories?.[0]?.id ?? null,
-    teacher_user_id: meta.value.teachers?.[0]?.id ?? null,
+    owner_user_id: meta.value.teachers?.[0]?.id ?? null,
     title: '',
     code: '(auto)',
     description: '',
@@ -107,7 +108,7 @@ const openEditCourse = (row) => {
   courseEditing.value = row
   courseFields.value = {
     course_category_id: row.course_category_id,
-    teacher_user_id: row.teacher_user_id,
+    owner_user_id: row.owner_user_id ?? null,
     title: row.title,
     code: row.code,
     description: row.description ?? '',
@@ -156,6 +157,60 @@ const toggleCourseActive = async (row) => {
     courseDt.value.reload()
   }
 }
+
+// ---- Book/chapters (editor) ----
+const showBook = ref(false)
+const currentCourseId = ref(null)
+const openBook = (row) => {
+  currentCourseId.value = row.id
+  showBook.value = true
+}
+
+// ---- Teachers management ----
+const teachersModal = ref(false)
+const teachersCourse = ref(null)
+const teachersList = ref([])
+const selectedTeacherToAdd = ref(null)
+
+const loadTeachers = async (courseId) => {
+  const { data } = await axios.get(`/courses/api/${courseId}/teachers/list`)
+  teachersList.value = data.teachers
+}
+
+const openTeachers = async (row) => {
+  teachersCourse.value = row
+  teachersModal.value = true
+  selectedTeacherToAdd.value = null
+  await loadTeachers(row.id)
+}
+
+const addTeacher = async () => {
+  if (!selectedTeacherToAdd.value) return
+  const res = await axios.post(`/courses/api/${teachersCourse.value.id}/teachers/add`, {
+    user_id: selectedTeacherToAdd.value,
+  })
+  if (res.data.success) {
+    notify({ type: 'success', message: 'Docente aggiunto' })
+    selectedTeacherToAdd.value = null
+    await loadTeachers(teachersCourse.value.id)
+  }
+}
+
+const removeTeacher = async (t) => {
+  const res = await axios.post(`/courses/api/${teachersCourse.value.id}/teachers/remove`, {
+    user_id: t.id,
+  })
+  if (res.data.success) {
+    notify({ type: 'success', message: 'Docente rimosso' })
+    await loadTeachers(teachersCourse.value.id)
+  } else {
+    notify({ type: 'error', message: res.data.message ?? 'Errore' })
+  }
+}
+
+watch(teachersModal, (v) => {
+  if (!v) teachersCourse.value = null
+})
 </script>
 
 <template>
@@ -224,13 +279,19 @@ const toggleCourseActive = async (row) => {
               <span>€ {{ value }}</span>
             </div>
           </template>
-          <template #item.teacher_lastname="{ item }">
+          <template #item.owner_lastname="{ item }">
             <div class="d-flex align-center justify-center">
-              <span>{{ item.teacher_firstname }} {{ item.teacher_lastname }}</span>
+              <span>{{ item.owner_firstname }} {{ item.owner_lastname }}</span>
             </div>
           </template>
           <template #item.actions="{ item }">
             <div class="d-flex align-center justify-center">
+              <v-btn v-tooltip="'Libro'" size="small" class="mr-1" variant="text" icon @click="openBook(item)">
+                <v-icon color="primary">mdi-book-open-page-variant</v-icon>
+              </v-btn>
+              <v-btn v-tooltip="'Docenti'" size="small" class="mr-1" variant="text" icon @click="openTeachers(item)">
+                <v-icon color="primary">mdi-account-multiple</v-icon>
+              </v-btn>
               <v-btn v-tooltip="'Modifica'" size="small" class="mr-1" variant="text" icon @click="openEditCourse(item)">
                 <v-icon color="warning">mdi-pencil</v-icon>
               </v-btn>
@@ -291,14 +352,13 @@ const toggleCourseActive = async (row) => {
                 :items="meta.teachers"
                 :item-title="(t) => `${t.firstname} ${t.lastname}`"
                 item-value="id"
-                v-model="courseFields.teacher_user_id"
-                label="Docente"
+                v-model="courseFields.owner_user_id"
+                label="Owner"
               />
             </v-col>
           </v-row>
 
           <v-text-field v-model="courseFields.title" label="Titolo" />
-          <v-text-field v-model="courseFields.code" label="Codice" disabled hint="Generato automaticamente dalla categoria" persistent-hint />
           <v-textarea v-model="courseFields.description" label="Descrizione" />
 
           <v-row>
@@ -314,6 +374,68 @@ const toggleCourseActive = async (row) => {
           <v-spacer />
           <v-btn variant="tonal" color="green" @click="saveCourse">Conferma</v-btn>
         </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Book modal -->
+    <v-dialog v-model="showBook" fullscreen>
+      <v-card>
+        <v-card-actions>
+          <v-card-title>Libro corso</v-card-title>
+          <v-spacer />
+          <v-btn @click="showBook = false" icon><v-icon>mdi-close</v-icon></v-btn>
+        </v-card-actions>
+        <v-container>
+          <Books v-if="currentCourseId" :course-id="currentCourseId" />
+        </v-container>
+      </v-card>
+    </v-dialog>
+
+    <!-- Teachers modal -->
+    <v-dialog v-model="teachersModal" max-width="700">
+      <v-card>
+        <v-card-actions>
+          <v-card-title>Docenti corso</v-card-title>
+          <v-spacer />
+          <v-btn @click="teachersModal = false" icon><v-icon>mdi-close</v-icon></v-btn>
+        </v-card-actions>
+
+        <v-container>
+          <v-row>
+            <v-col cols="12" md="8">
+              <v-select
+                :items="meta.teachers"
+                :item-title="(t) => `${t.firstname} ${t.lastname}`"
+                item-value="id"
+                v-model="selectedTeacherToAdd"
+                label="Aggiungi docente"
+              />
+            </v-col>
+            <v-col cols="12" md="4" class="d-flex align-center">
+              <v-btn @click="addTeacher" block>Aggiungi</v-btn>
+            </v-col>
+          </v-row>
+
+          <v-list>
+            <v-list-item
+              v-for="t in teachersList"
+              :key="t.id"
+              :title="`${t.firstname} ${t.lastname}`"
+              :subtitle="t.role"
+            >
+              <template #append>
+                <v-btn
+                  v-if="t.role !== 'owner'"
+                  variant="text"
+                  icon
+                  @click="removeTeacher(t)"
+                >
+                  <v-icon color="error">mdi-delete</v-icon>
+                </v-btn>
+              </template>
+            </v-list-item>
+          </v-list>
+        </v-container>
       </v-card>
     </v-dialog>
 

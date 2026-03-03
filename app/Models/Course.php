@@ -8,7 +8,6 @@ class Course extends Model
 {
     protected $fillable = [
         'course_category_id',
-        'teacher_user_id',
         'title',
         'code',
         'description',
@@ -26,8 +25,15 @@ class Course extends Model
         return $this->belongsTo(CourseCategory::class, 'course_category_id');
     }
 
-    public function teacher()
+    public function teachers()
     {
-        return $this->belongsTo(User::class, 'teacher_user_id');
+        return $this->belongsToMany(User::class, 'course_user')
+            ->withPivot(['role'])
+            ->withTimestamps();
+    }
+
+    public function books()
+    {
+        return $this->hasMany(Book::class);
     }
 }
