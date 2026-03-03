@@ -10,14 +10,6 @@ import VueMobileDetection from 'vue-mobile-detection';
 import {md3} from 'vuetify/blueprints';
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
-import { createVPhoneInput, selectPhoneCountryInput, VPhoneCountryFlagSvg } from 'v-phone-input';
-import 'flag-icons/css/flag-icons.min.css';
-import 'v-phone-input/styles';
-const vPhoneInput = createVPhoneInput({
-    ...selectPhoneCountryInput,
-    countryDisplayComponent: VPhoneCountryFlagSvg,
-    modelFormat: 'international',
-})
 
 const vuetify = createVuetify({blueprint: md3, components, directives})
 
@@ -35,7 +27,6 @@ createInertiaApp({
         createApp({render: () => h(App, props)})
             .use(plugin)
             .use(vuetify)
-            .use(vPhoneInput)
             .use(VueMobileDetection)
             .mount(el)
     },
