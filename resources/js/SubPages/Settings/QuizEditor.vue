@@ -1,5 +1,6 @@
 <script setup>
-import { inject, onMounted, ref } from 'vue'
+import { inject, onMounted, ref, computed } from 'vue'
+import draggable from 'vuedraggable'
 
 const notify = inject('notify')
 
@@ -10,6 +11,8 @@ const props = defineProps({
 const loading = ref(true)
 const quiz = ref(null)
 const questions = ref([])
+
+const questionIds = computed(() => questions.value.map(q => q.id))
 
 const qModal = ref(false)
 const editing = ref(null)
@@ -101,6 +104,15 @@ const updateQuiz = async () => {
   }
 }
 
+const onReorder = async () => {
+  const res = await axios.post(`/quizzes/api/quiz/${quiz.value.id}/questions/reorder`, {
+    ids: questionIds.value,
+  })
+  if (res.data.success) {
+    notify({ type: 'success', message: 'Ordine aggiornato' })
+  }
+}
+
 const onTypeChange = () => {
   if (qFields.value.type === 'multiple_choice') {
     qFields.value.data = { options: qFields.value.data?.options?.length ? qFields.value.data : [{ text: 'Opzione 1', correct: true }] }
@@ -144,19 +156,29 @@ const onTypeChange = () => {
       </v-btn>
     </div>
 
-    <v-list>
-      <v-list-item
-        v-for="q in questions"
-        :key="q.id"
-        :title="`(${q.type}) ${q.prompt}`"
-        :subtitle="`Punti: ${q.points}`"
-      >
-        <template #append>
-          <v-btn variant="text" icon @click="openEdit(q)"><v-icon color="warning">mdi-pencil</v-icon></v-btn>
-          <v-btn variant="text" icon @click="removeQuestion(q)"><v-icon color="error">mdi-delete</v-icon></v-btn>
-        </template>
-      </v-list-item>
-    </v-list>
+    <draggable
+      v-model="questions"
+      item-key="id"
+      handle=".drag-handle"
+      @end="onReorder"
+    >
+      <template #item="{ element: q }">
+        <v-list>
+          <v-list-item
+            :title="`(${q.type}) ${q.prompt}`"
+            :subtitle="`Punti: ${q.points}`"
+          >
+            <template #prepend>
+              <v-icon class="drag-handle" style="cursor: grab">mdi-drag</v-icon>
+            </template>
+            <template #append>
+              <v-btn variant="text" icon @click="openEdit(q)"><v-icon color="warning">mdi-pencil</v-icon></v-btn>
+              <v-btn variant="text" icon @click="removeQuestion(q)"><v-icon color="error">mdi-delete</v-icon></v-btn>
+            </template>
+          </v-list-item>
+        </v-list>
+      </template>
+    </draggable>
 
     <v-dialog v-model="qModal" max-width="800">
       <v-card>

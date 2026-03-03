@@ -23,6 +23,7 @@
         "@vitejs/plugin-vue": "^6.0.4",
         "vue": "^3.5.29",
         "vue-mobile-detection": "^2.0.1",
+        "vuedraggable": "^4.1.0",
         "vuetify": "^4.0.0"
     }
 }
