@@ -42,6 +42,26 @@ const editUser = async (user = null, action = 'show') => {
 
 }
 
+const deleteUser = async (user) => {
+    const ok = confirm("Eliminare l'utente?")
+
+    if (ok) {
+        const res = await axios.post(`/settings/api/users/${user.id}/delete`);
+        if (res.data.success) {
+            table.value.reload();
+            notify({
+                message: "Utente eliminato",
+                type: 'success'
+            });
+            return;
+        }
+        notify({
+            message: "Impossibile eliminare l'utente",
+            type: 'error'
+        })
+    }
+}
+
 const toggleUserActivation = async (user) => {
     const res = await axios.post(`/settings/api/users/${user.id}/edit`, {
         active: !user.active
@@ -62,7 +82,10 @@ const toggleUserActivation = async (user) => {
 </script>
 
 <template>
-    <v-btn variant="tonal" class="float-end mb-1"><v-icon class="mr-2">mdi-plus</v-icon> Nuovo utente</v-btn>
+    <v-btn variant="tonal" class="float-end mb-1">
+        <v-icon class="mr-2">mdi-plus</v-icon>
+        Nuovo utente
+    </v-btn>
     <DataTable ref="dt" :computed="[{key: 'actions', title: 'Azioni'}]" url="/settings/api/users/list">
         <template v-slot:item.phone_number="{item}">
             <v-chip v-if="item.phone_number === null" color="warning">Telefono non definito</v-chip>
@@ -87,7 +110,7 @@ const toggleUserActivation = async (user) => {
                        v-tooltip="item.active ? 'Utente attivo' : 'Utente disattivato'" icon class="mr-1">
                     <v-icon :color="item.active ? 'green' : 'red'">mdi-power</v-icon>
                 </v-btn>
-                <v-btn v-tooltip="'Elimina'" size="small" class="mr-1" variant="text" icon>
+                <v-btn @click="deleteUser(item)" v-tooltip="'Elimina'" size="small" class="mr-1" variant="text" icon>
                     <v-icon color="error">mdi-delete</v-icon>
                 </v-btn>
             </div>

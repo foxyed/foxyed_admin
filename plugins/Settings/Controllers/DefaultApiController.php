@@ -51,6 +51,21 @@ class DefaultApiController
         ]);
     }
 
+    #[Route("/users/{id}/delete", methods: ['POST'])]
+    public function deleteUser($id)
+    {
+        $user = User::query()->find($id);
+        if (in_array("admin", $user->groups)) {
+            return response()->json([
+                'success' => false,
+            ]);
+        }
+        $user->delete();
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
     #[Route("/dictionary/list")]
     #[IsGranted("role:admin")]
     public function getDictionary()
