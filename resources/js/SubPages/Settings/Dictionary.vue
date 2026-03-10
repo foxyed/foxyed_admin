@@ -108,12 +108,11 @@ const showEditModal = async (item = null, action = 'show') => {
 </script>
 
 <template>
-    <v-btn @click="showModal = true" class="float-end mb-3">
-        <v-icon>mdi-plus</v-icon>
-        Nuovo record
-    </v-btn>
     <DataTable ref="dt" :computed="[{key: 'actions', title: 'Azioni'}]"
                url="/settings/api/dictionary/list">
+        <template #quick>
+            <v-btn @click="showModal = true" icon="mdi-plus"></v-btn>
+        </template>
         <template v-slot:item.is_live="{ item }">
             <div class="d-flex align-center justify-center">
                 <v-switch

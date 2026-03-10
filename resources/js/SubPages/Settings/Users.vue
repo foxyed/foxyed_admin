@@ -100,13 +100,12 @@ const closeUserCreate = () => {
 </script>
 
 <template>
-    <v-btn @click="createUser = true" variant="tonal" class="float-end mb-1">
-        <v-icon class="mr-2">mdi-plus</v-icon>
-        Nuovo utente
-    </v-btn>
     <DataTable @click:row="showUserDetails" ref="dt"
                :computed="[{key: 'actions', title: 'Azioni'}, {key: 'id', title: 'ID', hidden: true}]"
                url="/settings/api/users/list">
+        <template #quick>
+            <v-btn icon="mdi-plus" @click="createUser = true"/>
+        </template>
         <template v-slot:item.phone_number="{item}">
             <v-chip v-if="item.phone_number === null" color="warning">Telefono non definito</v-chip>
             <span v-else>{{ item.phone_number }}</span>
