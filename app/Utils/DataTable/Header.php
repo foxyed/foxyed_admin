@@ -9,6 +9,7 @@ class Header
         private readonly string $title,
         private readonly string $align,
         private readonly bool   $sortable = true,
+        private readonly bool   $searchable = true,
     )
     {
     }
@@ -21,6 +22,7 @@ class Header
             'title' => $this->title,
             'align' => $this->align,
             'sortable' => $this->sortable,
+            'searchable' => $this->searchable,
         ];
     }
 
@@ -29,8 +31,13 @@ class Header
         return $this->key;
     }
 
-    public static function make($key, $title, $align, $sortable = true)
+    public function isSearchable(): bool
     {
-        return new self($key, $title, $align, $sortable);
+        return $this->searchable;
+    }
+
+    public static function make($key, $title, $align, $sortable = true, $searchable = true): self
+    {
+        return new self($key, $title, $align, $sortable, $searchable);
     }
 }

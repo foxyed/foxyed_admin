@@ -36,11 +36,11 @@ const showNotification = ({type, message}) => {
 };
 
 defineExpose({
-    notify: showNotification
+    notify: showNotification,
 });
 
 provide('notify', showNotification);
-
+provide('isMobile', isMobile);
 watch(
     () => page.props.flash?.notification,
     (notification) => {
@@ -71,34 +71,46 @@ watch(
                     <v-container>
                         <v-row class="text-center">
                             <v-col v-if="hasRole('admin','administrative')" cols="4">
-                                <img style="height: 40px" :src="studentsImg" alt="students"/>
-                                <br/>
-                                <small>Studenti</small>
+                               <v-card elevation="0" class="h-100 w-100 pa-2">
+                                   <img style="height: 40px" :src="studentsImg" alt="students"/>
+                                   <br/>
+                                   <small>Studenti</small>
+                               </v-card>
                             </v-col>
                             <v-col v-if="hasRole('admin','administrative', 'teacher')" cols="4">
-                                <img style="height: 40px" :src="documentsImg" alt="documents"/>
-                                <br/>
-                                <small>Documenti</small>
+                                <v-card elevation="0" class="h-100 w-100 pa-2">
+                                    <img style="height: 40px" :src="documentsImg" alt="documents"/>
+                                    <br/>
+                                    <small>Documenti</small>
+                                </v-card>
                             </v-col>
                             <v-col v-if="hasRole('admin','administrative', 'teacher')" cols="4">
-                                <img style="height: 40px" :src="coursesImg" alt="courses"/>
-                                <br/>
-                                <small>Corsi</small>
+                               <v-card elevation="0" class="h-100 w-100 pa-2">
+                                   <img style="height: 40px" :src="coursesImg" alt="courses"/>
+                                   <br/>
+                                   <small>Corsi</small>
+                               </v-card>
                             </v-col>
                             <v-col v-if="hasRole('admin','administrative')" cols="4">
-                                <img style="height: 40px" :src="teachersImg" alt="teachers"/>
-                                <br/>
-                                <small>Insegnanti</small>
+                                <v-card elevation="0" class="h-100 w-100 pa-2">
+                                    <img style="height: 40px" :src="teachersImg" alt="teachers"/>
+                                    <br/>
+                                    <small>Insegnanti</small>
+                                </v-card>
                             </v-col>
                             <v-col cols="4">
-                                <img style="height: 40px" :src="aiImg" alt="teachers"/>
-                                <br/>
-                                <small>AI</small>
+                               <v-card elevation="0" class="h-100 w-100 pa-2">
+                                   <img style="height: 40px" :src="aiImg" alt="teachers"/>
+                                   <br/>
+                                   <small>AI</small>
+                               </v-card>
                             </v-col>
-                            <v-col :is="Link" href="/settings" v-if="hasRole('admin')" cols="4">
-                                <img style="height: 40px" :src="settingsImg" alt="Settings"/>
-                                <br/>
-                                <small>Impostazioni</small>
+                            <v-col v-if="hasRole('admin')" cols="4">
+                                <v-card class="h-100 w-100 pa-2"  :is="Link" href="/settings" elevation="0">
+                                    <img style="height: 40px" :src="settingsImg" alt="Settings"/>
+                                    <br/>
+                                    <small>Impostazioni</small>
+                                </v-card>
                             </v-col>
                         </v-row>
                     </v-container>

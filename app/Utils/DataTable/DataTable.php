@@ -46,7 +46,10 @@ class DataTable
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
                 foreach ($this->headers as $header) {
-                    $q->orWhere($header->getKey(), 'like', "%{$search}%");
+                    if($header->isSearchable()) {
+                        $q->orWhere($header->getKey(), 'like', "%{$search}%");
+                    }
+
                 }
             });
         }
