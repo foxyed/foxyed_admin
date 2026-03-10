@@ -4,10 +4,8 @@ namespace App\Providers;
 
 use App\Models\Settings;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-use App\Models\Course;
-use App\Policies\CoursePolicy;
 use Mollie\Api\MollieApiClient;
+use Spatie\Dropbox\Client;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
             $mollie->setApiKey($value);
             return $mollie;
         });
+
+        $this->app->singleton('dropbox', function ($app) {
+            return new Client(env("DROPBOX_KEY"));
+        });
     }
 
     /**
@@ -33,6 +35,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('course.manage', [CoursePolicy::class, 'manage']);
+
     }
 }
