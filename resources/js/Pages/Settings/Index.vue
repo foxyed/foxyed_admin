@@ -1,11 +1,10 @@
 <script setup>
 import Logged from "../Layouts/Logged.vue";
-import {ref, useTemplateRef} from "vue";
+import {ref} from "vue";
 import Dictionary from "../../SubPages/Settings/Dictionary.vue";
 import Users from "../../SubPages/Settings/Users.vue";
 
 const tab = ref("");
-const layout = useTemplateRef('layout');
 </script>
 
 <template>

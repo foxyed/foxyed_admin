@@ -59,7 +59,7 @@ watch(
 <template>
     <v-app>
         <v-app-bar>
-            <v-app-bar-nav-icon @click="sidebarOpen = !sidebarOpen"/>
+            <v-app-bar-nav-icon v-if="$slots.sidebar" @click="sidebarOpen = !sidebarOpen"/>
             <v-spacer></v-spacer>
             <v-menu location="bottom">
                 <template v-slot:activator="{props}">
@@ -71,25 +71,25 @@ watch(
                     <v-container>
                         <v-row class="text-center">
                             <v-col v-if="hasRole('admin','administrative')" cols="4">
-                               <v-card elevation="0" class="h-100 w-100 pa-2">
-                                   <img style="height: 40px" :src="studentsImg" alt="students"/>
-                                   <br/>
-                                   <small>Studenti</small>
-                               </v-card>
+                                <v-card elevation="0" class="h-100 w-100 pa-2">
+                                    <img style="height: 40px" :src="studentsImg" alt="students"/>
+                                    <br/>
+                                    <small>Studenti</small>
+                                </v-card>
                             </v-col>
                             <v-col v-if="hasRole('admin','administrative', 'teacher')" cols="4">
-                                <v-card elevation="0" class="h-100 w-100 pa-2">
+                                <v-card :is="Link" href="/drive" elevation="0" class="h-100 w-100 pa-2">
                                     <img style="height: 40px" :src="documentsImg" alt="documents"/>
                                     <br/>
                                     <small>Documenti</small>
                                 </v-card>
                             </v-col>
                             <v-col v-if="hasRole('admin','administrative', 'teacher')" cols="4">
-                               <v-card elevation="0" class="h-100 w-100 pa-2">
-                                   <img style="height: 40px" :src="coursesImg" alt="courses"/>
-                                   <br/>
-                                   <small>Corsi</small>
-                               </v-card>
+                                <v-card elevation="0" class="h-100 w-100 pa-2">
+                                    <img style="height: 40px" :src="coursesImg" alt="courses"/>
+                                    <br/>
+                                    <small>Corsi</small>
+                                </v-card>
                             </v-col>
                             <v-col v-if="hasRole('admin','administrative')" cols="4">
                                 <v-card elevation="0" class="h-100 w-100 pa-2">
@@ -99,14 +99,14 @@ watch(
                                 </v-card>
                             </v-col>
                             <v-col cols="4">
-                               <v-card elevation="0" class="h-100 w-100 pa-2">
-                                   <img style="height: 40px" :src="aiImg" alt="teachers"/>
-                                   <br/>
-                                   <small>AI</small>
-                               </v-card>
+                                <v-card elevation="0" class="h-100 w-100 pa-2">
+                                    <img style="height: 40px" :src="aiImg" alt="teachers"/>
+                                    <br/>
+                                    <small>AI</small>
+                                </v-card>
                             </v-col>
                             <v-col v-if="hasRole('admin')" cols="4">
-                                <v-card class="h-100 w-100 pa-2"  :is="Link" href="/settings" elevation="0">
+                                <v-card class="h-100 w-100 pa-2" :is="Link" href="/settings" elevation="0">
                                     <img style="height: 40px" :src="settingsImg" alt="Settings"/>
                                     <br/>
                                     <small>Impostazioni</small>
@@ -153,6 +153,8 @@ watch(
                     v-tooltip="'Studenti'"
                     :prepend-avatar="studentsImg"/>
                 <v-list-item
+                    :is="Link"
+                    href="/drive"
                     v-if="hasRole('admin','administrative', 'teacher')"
                     v-tooltip="'Documenti'"
                     :prepend-avatar="documentsImg"/>
@@ -175,9 +177,9 @@ watch(
                     :prepend-avatar="settingsImg"/>
             </v-list>
         </v-navigation-drawer>
-        <v-navigation-drawer v-model="sidebarOpen">
+        <v-navigation-drawer v-if="$slots.sidebar" v-model="sidebarOpen">
             <v-list>
-                <v-list-item title="Dashboard" prepend-icon="mdi-home"/>
+                <slot name="sidebar"/>
             </v-list>
         </v-navigation-drawer>
         <v-main>
