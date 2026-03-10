@@ -1,6 +1,10 @@
 <script setup>
-import {ref, watch} from 'vue'
+import { ref, watch } from 'vue'
 import axios from 'axios'
+
+defineOptions({
+    inheritAttrs: false
+})
 
 const props = defineProps({
     url: {
@@ -9,10 +13,9 @@ const props = defineProps({
     },
     computed: {
         type: Array,
-        required: false,
-        default: []
+        default: () => []
     }
-});
+})
 
 const headers = ref([])
 const items = ref([])
@@ -28,7 +31,7 @@ const options = ref({
 const loadItems = async () => {
     loading.value = true
 
-    const {data} = await axios.get(props.url, {
+    const { data } = await axios.get(props.url, {
         params: {
             page: options.value.page,
             itemsPerPage: options.value.itemsPerPage,
@@ -38,14 +41,17 @@ const loadItems = async () => {
     })
 
     headers.value = data.headers
+
     props.computed.forEach(el => {
         headers.value.push({
             key: el.key,
             title: el.title,
             align: el.align ?? "center",
+            hidden: el.hidden ?? false,
             sortable: el.sortable ?? false
-        });
+        })
     })
+
     items.value = data.items
     total.value = data.total
 
@@ -56,18 +62,18 @@ defineExpose({
     reload: loadItems
 })
 
-watch(options, loadItems, {deep: true, immediate: true})
+watch(options, loadItems, { deep: true, immediate: true })
 </script>
 
 <template>
     <v-data-table-server
+        v-bind="$attrs"
         v-model:options="options"
-        :headers="headers"
+        :headers="headers.filter(h => !h.hidden)"
         :items="items"
         :items-length="total"
         :loading="loading"
     >
-        <!-- 🔥 Forward di tutti gli slot -->
         <template
             v-for="(_, slotName) in $slots"
             #[slotName]="slotProps"

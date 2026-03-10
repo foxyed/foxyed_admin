@@ -1,7 +1,6 @@
 <script setup>
 import Logged from "../Layouts/Logged.vue";
 import {ref, useTemplateRef} from "vue";
-import DataTable from "../../Components/DataTable.vue";
 import Dictionary from "../../SubPages/Settings/Dictionary.vue";
 import Users from "../../SubPages/Settings/Users.vue";
 
