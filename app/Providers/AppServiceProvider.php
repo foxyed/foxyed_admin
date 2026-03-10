@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Models\Settings;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Course;
+use App\Policies\CoursePolicy;
 use Mollie\Api\MollieApiClient;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,6 +33,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::define('course.manage', [CoursePolicy::class, 'manage']);
     }
 }

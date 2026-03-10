@@ -13,6 +13,8 @@ const layout = useTemplateRef('layout');
         <v-tabs v-model="tab" align-tabs="center">
             <v-tab prepend-icon="mdi-book-alphabet" value="dictionary">Dizionario</v-tab>
             <v-tab prepend-icon="mdi-account-group" value="users">Utenti</v-tab>
+            <v-tab prepend-icon="mdi-account-cog" value="users_mgmt">Gestione utenti</v-tab>
+            <v-tab prepend-icon="mdi-book-open-variant" value="courses">Corsi</v-tab>
         </v-tabs>
         <v-tabs-window v-model="tab">
             <v-tabs-window-item
@@ -23,6 +25,14 @@ const layout = useTemplateRef('layout');
             <v-tabs-window-item
                 value="users">
                     <Users/>
+            </v-tabs-window-item>
+            <v-tabs-window-item
+                value="users_mgmt">
+                <Users/>
+            </v-tabs-window-item>
+            <v-tabs-window-item
+                value="courses">
+                <Courses/>
             </v-tabs-window-item>
         </v-tabs-window>
     </Logged>
