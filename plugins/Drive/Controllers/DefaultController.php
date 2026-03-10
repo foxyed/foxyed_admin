@@ -23,9 +23,6 @@ class DefaultController
     #[Route("/")]
     public function index()
     {
-        $folders = $this->dropbox->listFolder()['entries'];
-        return Inertia::render("Drive/Index", [
-            'folders' => $folders,
-        ]);
+        return Inertia::render("Drive/Index", []);
     }
 }

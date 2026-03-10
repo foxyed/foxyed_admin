@@ -10,6 +10,7 @@ import {Link, usePage} from "@inertiajs/vue3";
 
 const sidebarOpen = ref(false)
 const isMobile = ref(window.innerWidth < 960)
+const loading = ref(false);
 
 const page = usePage()
 
