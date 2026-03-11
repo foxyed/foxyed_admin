@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Settings;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 use Mollie\Api\MollieApiClient;
 use Spatie\Dropbox\Client;
@@ -26,7 +27,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton('dropbox', function ($app) {
-            return new Client(env("DROPBOX_KEY"));
+            $dropboxKey = Cache::get('dropbox_token');
+            if (empty($dropboxKey)) {
+                throw new \Exception("Dropbox key not found");
+            }
+            return new Client($dropboxKey);
         });
     }
 
