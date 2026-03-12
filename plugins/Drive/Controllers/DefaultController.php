@@ -12,12 +12,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[IsGranted("role:admin")]
 class DefaultController
 {
-    private Client $dropbox;
 
     public function __construct()
     {
-        $dropbox = app("dropbox");
-        $this->dropbox = $dropbox;
+
     }
 
     #[Route("/")]

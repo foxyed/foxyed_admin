@@ -37,5 +37,29 @@ class ApiController
             'current' => $path
         ]);
     }
+
+    #[Route("/create-folder", 'drive.create.folder', methods: ["POST"])]
+    public function createFolder()
+    {
+        $folderName = request("name");
+        $path = request("path", "/");
+
+        $folderPath = rtrim($path, '/') . '/' . ltrim($folderName, '/');
+
+        $this->dropbox->createFolder($folderPath);
+        return response()->json([
+            'success' => true,
+        ]);
+    }
+
+    #[Route("/delete-folder", 'drive.delete.folder', methods: ["POST"])]
+    public function deleteFolder()
+    {
+        $folderName = request("name");
+        $this->dropbox->delete($folderName);
+        return response()->json([
+            'success' => true,
+        ]);
+    }
 }
 

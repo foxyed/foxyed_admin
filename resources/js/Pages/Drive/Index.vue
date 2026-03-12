@@ -1,15 +1,13 @@
 <script setup>
-
-import { usePage } from "@inertiajs/vue3"
 import Drive from "../Layouts/Drive.vue"
-import { onMounted, ref, computed } from "vue"
-import axios from "axios"
+import {computed, inject, onMounted, ref} from "vue"
+import ContextMenu from '@imengyu/vue3-context-menu'
 
-const page = usePage()
+import axios from "axios";
 
 const files = ref([])
 const currentPath = ref("/")
-const parentPath = ref(null)
+const parentPath = ref(null);
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +26,71 @@ const navigateToFolder = async (path) => {
     files.value = res.data.data
     currentPath.value = res.data.current || "/"
     parentPath.value = res.data.parent
+}
+
+const onContextMenu = (e, type, path) => {
+    e.preventDefault();
+    if (type === 'folder') {
+        ContextMenu.showContextMenu({
+            theme: "mac dark",
+            x: e.x,
+            y: e.y,
+            items: [
+                {
+                    label: "Apri",
+                    icon: "mdi mdi-folder-open",
+                    onClick: () => {
+                        navigateToFolder(path)
+                    }
+                },
+                {
+                    label: "Rinomina",
+                    icon: "mdi mdi-rename",
+                    onClick: () => console.log("Rinomina"),
+                },
+                {
+                    label: "Elimina",
+                    icon: "mdi mdi-delete",
+                    onClick: async () => {
+                        const ok = window.confirm("Eliminare questa cartella?")
+                        if(ok){
+                            await axios.post('/drive/api/delete-folder', {
+                                name: path
+                            });
+                            await navigateToFolder(currentPath.value);
+                        }
+
+                    }
+                },
+
+            ]
+        })
+    }
+}
+
+const pageContextMenu = (e) => {
+    e.preventDefault();
+    ContextMenu.showContextMenu({
+        theme: 'mac dark',
+        x: e.x,
+        y: e.y,
+        items: [
+            {
+                label: "Ricarica",
+                icon: "mdi mdi-reload",
+                onClick: () => {
+                    navigateToFolder(currentPath.value)
+                }
+            },
+            {
+                label: "Informazioni",
+                icon: "mdi mdi-information-variant-circle-outline",
+                onClick: () => {
+
+                }
+            }
+        ]
+    })
 }
 
 /*
@@ -70,7 +133,10 @@ onMounted(() => {
 
 <template>
 
-    <Drive>
+    <Drive
+        :current-path="currentPath"
+        @contextmenu.prevent="pageContextMenu"
+    >
 
         <!-- Toolbar -->
 
@@ -111,13 +177,15 @@ onMounted(() => {
             >
 
                 <v-card
+                    :loading="file.loading"
                     v-if="file['.tag'] === 'folder'"
                     class="cursor-pointer"
-                    @click="navigateToFolder(file.path_lower)"
                     variant="tonal"
                     subtitle="Cartella"
                     :title="file.name"
                     prepend-icon="mdi-folder"
+                    @click.stop="file.loading = true; navigateToFolder(file.path_lower)"
+                    @contextmenu.stop.prevent="e => onContextMenu(e,'folder', file.path_lower)"
                 />
 
             </v-col>

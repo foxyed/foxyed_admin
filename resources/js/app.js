@@ -10,6 +10,8 @@ import VueMobileDetection from 'vue-mobile-detection';
 import {md3} from 'vuetify/blueprints';
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
+import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
+import ContextMenu from '@imengyu/vue3-context-menu'
 
 const vuetify = createVuetify({blueprint: md3, components, directives})
 
@@ -28,6 +30,7 @@ createInertiaApp({
             .use(plugin)
             .use(vuetify)
             .use(VueMobileDetection)
+            .use(ContextMenu)
             .mount(el)
     },
 })
