@@ -43,8 +43,12 @@ class DropboxReAuth extends Command
                 'refresh_token' => $item,
                 'grant_type' => 'refresh_token',
             ]);
-        Cache::put('dropbox_token', $response['access_token'], \Illuminate\Support\now()->addSeconds($response['expires_in']));
-        $this->output->success("Token successfully renewed!");
+        $ok = Cache::put('dropbox_token', $response['access_token'], \Illuminate\Support\now()->addSeconds($response['expires_in']));
+        if(!$ok){
+            $this->error("Could not refresh token");
+        } else {
+            $this->output->success("Token successfully renewed!");
+        }
 
     }
 }
