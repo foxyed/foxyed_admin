@@ -61,5 +61,21 @@ class ApiController
             'success' => true,
         ]);
     }
+
+    #[Route("/file-upload", 'drive.upload', methods: ["POST"])]
+    public function uploadFile()
+    {
+        $path = request()->input('path', '/');
+
+        $file = request()->file('file');
+
+        $filename = $file->getClientOriginalName();
+
+        $this->dropbox->upload($path . "/" . $filename, $file->getContent());
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
 }
 

@@ -11,6 +11,10 @@ const props = defineProps({
     }
 })
 
+const file = ref(null)
+const showFileUploader = ref(false)
+const uploading = ref(false)
+
 const createFolder = () => {
 
     const name = prompt("Nome cartella")
@@ -23,8 +27,30 @@ const createFolder = () => {
     })
 }
 
-const showFileUploader = ref(false);
+const onFileChange = (e) => {
+    file.value = e.target.files[0]
+}
 
+const onFileUpload = async () => {
+
+    if (!file.value) return
+
+    uploading.value = true
+
+    const formData = new FormData()
+    formData.append("file", file.value)
+    formData.append("path", props.currentPath)
+
+    await axios.post("/drive/api/file-upload", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    })
+
+    uploading.value = false
+    showFileUploader.value = false
+    file.value = null
+}
 
 </script>
 
@@ -52,14 +78,36 @@ const showFileUploader = ref(false);
                     </v-list>
                 </v-menu>
             </v-list-item>
-            <v-dialog z-index="99999" v-model="showFileUploader" max-width="500">
+            <v-dialog v-model="showFileUploader" max-width="500">
                 <v-card>
-                    <v-card-actions>
-                        <v-card-title>Carica file</v-card-title>
+                    <v-card-title class="d-flex align-center">
+                        Carica file
                         <v-spacer/>
-                        <v-btn @click="showFileUploader = false">
+                        <v-btn icon @click="showFileUploader = false">
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
+                    </v-card-title>
+
+                    <v-card-text>
+
+                        <input
+                            type="file"
+                            @change="onFileChange"
+                        />
+
+                    </v-card-text>
+
+                    <v-card-actions>
+                        <v-spacer/>
+
+                        <v-btn
+                            :loading="uploading"
+                            color="primary"
+                            @click="onFileUpload"
+                        >
+                            Carica
+                        </v-btn>
+
                     </v-card-actions>
 
                 </v-card>

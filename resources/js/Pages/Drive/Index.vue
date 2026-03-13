@@ -1,6 +1,6 @@
 <script setup>
 import Drive from "../Layouts/Drive.vue"
-import {computed, inject, onMounted, ref} from "vue"
+import {computed, onMounted, ref} from "vue"
 import ContextMenu from '@imengyu/vue3-context-menu'
 
 import axios from "axios";
@@ -23,7 +23,8 @@ const navigateToFolder = async (path) => {
         }
     })
 
-    files.value = res.data.data
+    files.value = res.data.data;
+    console.log(res.data.data);
     currentPath.value = res.data.current || "/"
     parentPath.value = res.data.parent
 }
@@ -53,7 +54,7 @@ const onContextMenu = (e, type, path) => {
                     icon: "mdi mdi-delete",
                     onClick: async () => {
                         const ok = window.confirm("Eliminare questa cartella?")
-                        if(ok){
+                        if (ok) {
                             await axios.post('/drive/api/delete-folder', {
                                 name: path
                             });
@@ -65,6 +66,37 @@ const onContextMenu = (e, type, path) => {
 
             ]
         })
+    } else {
+        ContextMenu.showContextMenu({
+            theme: "mac dark",
+            x: e.x,
+            y: e.y,
+            items: [
+                {
+                    label: "Download",
+                    icon: "mdi mdi-download",
+                    onClick: () => console.log("Downloading...")
+                },
+                {
+                    label: "Rinomina",
+                    icon: "mdi mdi-cursor-text",
+                    onClick: () => console.log("Rinomina")
+                },
+                {
+                    label: "Elimina",
+                    icon: "mdi mdi-delete",
+                    onClick: async () => {
+                        const ok = window.confirm("Eliminare questo file?")
+                        if (ok) {
+                            await axios.post('/drive/api/delete-folder', {
+                                name: path
+                            });
+                            await navigateToFolder(currentPath.value);
+                        }
+                    }
+                }
+            ]
+        });
     }
 }
 
@@ -91,6 +123,30 @@ const pageContextMenu = (e) => {
             }
         ]
     })
+}
+
+const getIconFromType = (fileName) => {
+    const split = fileName.split('.');
+    const ext = split[split.length - 1];
+    let icon = "mdi-";
+    switch (ext) {
+        case "png":
+        case "jpeg":
+        case "jpg":
+            icon += "file-image-outline";
+            break;
+        case "pdf":
+            icon += "file-pdf-box"
+            break;
+        case "book":
+            icon += "book"
+            break;
+        default:
+            icon += "file-document"
+
+    }
+
+    return icon;
 }
 
 /*
@@ -190,6 +246,21 @@ onMounted(() => {
 
             </v-col>
 
+        </v-row>
+        <v-row v-if="files.length > 0">
+            <v-col
+                v-for="file in files"
+                :key="file.id"
+                cols="6"
+                md="4"
+                lg="3"
+            >
+                <v-card
+                    :subtitle="file.name" v-if="file['.tag'] !== 'folder'"
+                    :prepend-icon="getIconFromType(file.name)"
+                    @contextmenu.stop.prevent="e => onContextMenu(e,'file', file.path_lower)"
+                />
+            </v-col>
         </v-row>
 
 
