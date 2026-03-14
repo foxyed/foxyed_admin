@@ -4,7 +4,6 @@ namespace Plugins\Drive\Controllers;
 
 use App\Attributes\IsGranted;
 use Inertia\Inertia;
-use Spatie\Dropbox\Client;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route("/drive")]

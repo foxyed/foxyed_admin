@@ -52,7 +52,7 @@ class ApiController
         ]);
     }
 
-    #[Route("/delete-folder", 'drive.delete.folder', methods: ["POST"])]
+    #[Route("/delete", 'drive.delete', methods: ["POST"])]
     public function deleteFolder()
     {
         $folderName = request("name");
@@ -77,5 +77,18 @@ class ApiController
             'success' => true,
         ]);
     }
+
+    #[Route("/download", 'drive.download', methods: ["POST"])]
+    public function downloadFile()
+    {
+        $path = request("path");
+        $link = $this->dropbox->getTemporaryLink($path);
+        return response()->json([
+            'success' => true,
+            'link' => $link
+        ]);
+
+    }
+
 }
 
